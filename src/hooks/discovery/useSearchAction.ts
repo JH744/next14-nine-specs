@@ -79,18 +79,21 @@ export async function stockListByStockName(stockNameList: string[]) {
 /**검색 종목의 관련뉴스가져오기 */
 export async function getRelatedStockNews(stockId: string) {
   try {
-    // console.log("가져온 stockId:" + stockId);
-    const userStocksCollectionRef = collection(firestore, `news/stockNews/articles`);
-    const q = query(userStocksCollectionRef, where("relatedStocks", "==", stockId), limit(20)); // AMZN 또는 GOOGL , MSFT
+    console.log("가져온 stockId:" + stockId);
+    const userStocksCollectionRef = collection(firestore, `news/stockWorldNews/articles`);
+    // const q = query(userStocksCollectionRef, where("relatedStocks", "==", stockId), limit(20)); // AMZN 또는 GOOGL , MSFT
+    const q = query(userStocksCollectionRef, where("relatedStocks", "array-contains", stockId), limit(20)); // AMZN 또는 GOOGL// 필드값 배열조회
     // 쿼리 실행
     const querySnapshot = await getDocs(q);
+    console.log("querySnapshot" + querySnapshot);
 
     const newsList: NewsResponse[] = [];
 
     querySnapshot.forEach((doc) => {
       newsList.push(doc.data() as NewsResponse);
+      console.log("ddd" + doc.data);
     });
-    // console.log("가져온 뉴스 데이터" + newsList);
+    console.log("가져온 뉴스 데이터" + newsList);
     return newsList;
   } catch (e) {
     console.error;
