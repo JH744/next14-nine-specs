@@ -84,7 +84,7 @@ export default async function Page({ params }: TProps) {
         </div>
         <div>
           {/* 뉴스탭 */}
-          <DiscoveryNeswTap relatedNews={relatedNews} />
+          {/* <DiscoveryNeswTap relatedNews={relatedNews} /> */}
         </div>
       </div>
     </>

@@ -137,10 +137,9 @@ export async function useUpdateProfile(formData: FormData) {
     console.log("관심 종목 수정 완료");
   } catch (error) {
     console.log("관심 종목 수정 중 에러 발생:", error);
+  } finally {
+    revalidatePath("/mypage/profile");
   }
-
-  revalidatePath("/mypage/profile");
-  // redirect("/mypage/profile");
 }
 
 export async function updateLang(lang: string) {
