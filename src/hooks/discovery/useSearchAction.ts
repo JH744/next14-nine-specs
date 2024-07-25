@@ -1,6 +1,17 @@
 "use server";
 import { firestore } from "@/firebase/firebaseConfig";
-import { collection, doc, getDoc, getDocs, limit, query, setDoc, updateDoc, where } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  increment,
+  limit,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getStockByKeyword, TStocks } from "../profile/useStocksHandler";
@@ -12,38 +23,26 @@ type TstockInfoList = {
 }[];
 export async function searchAction(formData: FormData) {
   const keyword = formData.get("keyword") as string;
-  console.log("서버액션실행-전달받은 데이터:" + keyword);
-
-  // 현재 날짜를 "MM.DD" 형식으로 가져오기
-  const today = new Date();
-  const formattedDate = `${("0" + (today.getMonth() + 1)).slice(-2)}.${("0" + today.getDate()).slice(-2)}`;
-
-  AddSearchCount(keyword); // 검색카운트 +1
-
-  //주식종목의 uid를 넘길 예정
-  redirect(`/discovery/${encodeURIComponent(keyword)}`);
-  // revalidatePath(`/discovery/${keyword}`);
-  // revalidatePath("/");
-  // 5. keyword = 연관 종목인 뉴스 도커먼트 가져오기
-  // 6. Keyword = 주식종목명인 주식종목 가져오기
+  console.log("전달받은 데이터:" + keyword);
+  await AddSearchCount(keyword); // 검색카운트 +1
+  redirect(`/discovery/${encodeURIComponent(keyword)}`); // 페이지이동
 }
 
 /**    // 주식종목명 = keyword인 주식종목의 searchCount +1 */
 export async function AddSearchCount(keyword: string) {
   try {
     const stocksRef = collection(firestore, "stocks");
-    const q = query(stocksRef, where("stockName", "==", keyword));
+    const q = query(stocksRef, where("stockName", "==", keyword), limit(1));
     const querySnapshot = await getDocs(q);
-    console.log("querySnapshot:" + querySnapshot.docs[0]);
+    const doc = querySnapshot.docs[0];
 
-    querySnapshot.forEach(async (doc) => {
-      const stockData = doc.data();
-      const newSearchCount = (stockData.searchCount || 0) + 1;
-
+    if (doc) {
       await updateDoc(doc.ref, {
-        searchCount: newSearchCount,
+        searchCount: increment(1),
       });
-    });
+    } else {
+      console.log("해당 주식 종목을 찾을 수 없습니다.");
+    }
   } catch (error) {
     console.log("에러 발생:", error);
   }
